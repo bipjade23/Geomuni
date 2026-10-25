@@ -1,0 +1,5 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"nombre":"Av. Principal","estado":"Bueno","longitud_m":1850},"geometry":{"type":"LineString","coordinates":[[-77.052,-12.046],[-77.044,-12.046],[-77.036,-12.047]]}},
+{"type":"Feature","properties":{"nombre":"Jr. Los Pinos","estado":"Regular","longitud_m":1720},"geometry":{"type":"LineString","coordinates":[[-77.044,-12.038],[-77.044,-12.046],[-77.043,-12.056]]}},
+{"type":"Feature","properties":{"nombre":"Calle Las Flores","estado":"Malo","longitud_m":640},"geometry":{"type":"LineString","coordinates":[[-77.038,-12.041],[-77.034,-12.044]]}}
+]}

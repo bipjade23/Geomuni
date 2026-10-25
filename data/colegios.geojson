@@ -1,0 +1,5 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"nombre":"I.E. 1001","nivel":"Primaria","alumnos":420},"geometry":{"type":"Point","coordinates":[-77.0475,-12.0415]}},
+{"type":"Feature","properties":{"nombre":"I.E. 1002","nivel":"Secundaria","alumnos":1180},"geometry":{"type":"Point","coordinates":[-77.0375,-12.0522]}},
+{"type":"Feature","properties":{"nombre":"I.E.I. 205","nivel":"Inicial","alumnos":95},"geometry":{"type":"Point","coordinates":[-77.0415,-12.0445]}}
+]}

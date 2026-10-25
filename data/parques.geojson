@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"nombre":"Parque Central","tipo":"Parque zonal","area_m2":18450.5},"geometry":{"type":"Polygon","coordinates":[[[-77.050,-12.040],[-77.046,-12.040],[-77.046,-12.043],[-77.050,-12.043],[-77.050,-12.040]]]}},
+{"type":"Feature","properties":{"nombre":"Parque Los Olivos","tipo":"Parque vecinal","area_m2":9210},"geometry":{"type":"Polygon","coordinates":[[[-77.040,-12.050],[-77.035,-12.050],[-77.035,-12.054],[-77.040,-12.054],[-77.040,-12.050]]]}}
+]}

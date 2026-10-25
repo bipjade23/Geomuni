@@ -1,0 +1,114 @@
+:root {
+  --tinta: #1d2a2e;
+  --tinta-suave: #5b6a6e;
+  --papel: #f9f8f4;
+  --linea: #d9d6cc;
+  --acento: #0f6b6f;
+  --acento-fondo: #e3efee;
+  --ancho-panel: 320px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color: var(--tinta);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+#mapa { position: absolute; inset: 0; }
+
+/* ---------- Panel lateral ---------- */
+#panel {
+  position: absolute;
+  z-index: 1000;
+  top: 12px; left: 12px;
+  width: var(--ancho-panel);
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(29, 42, 46, .18);
+}
+#panel.oculto { display: none; }
+
+#panel header { padding: 14px 16px 12px; border-bottom: 1px solid var(--linea); }
+#panel h1 { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.25; }
+#subtitulo { margin: 2px 0 0; color: var(--tinta-suave); font-size: .9rem; }
+#subtitulo:empty { display: none; }
+
+#panel section { padding: 12px 16px; }
+#panel section + section { border-top: 1px solid var(--linea); }
+#panel h2 { margin: 0 0 8px; font-size: .85rem; font-weight: 700; color: var(--tinta-suave); }
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+/* ---------- Lista de capas ---------- */
+.capa + .capa { margin-top: 10px; }
+.capa-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.capa-fila label { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; min-width: 0; }
+.capa-fila input { width: 16px; height: 16px; accent-color: var(--acento); flex: none; }
+.capa-fila .nombre { overflow-wrap: anywhere; }
+
+.muestra {
+  display: inline-block; flex: none;
+  width: 14px; height: 14px;
+  border: 2px solid; border-radius: 2px;
+}
+.muestra.punto { border-radius: 50%; }
+.muestra.linea { height: 4px; border: 0; border-radius: 2px; }
+
+.acercar {
+  flex: none; font: inherit; font-size: .8rem;
+  padding: 2px 8px; color: var(--acento);
+  background: transparent; border: 1px solid var(--linea); border-radius: 4px; cursor: pointer;
+}
+.acercar:hover:not(:disabled) { background: var(--acento-fondo); border-color: var(--acento); }
+.acercar:disabled { opacity: .45; cursor: default; }
+
+.leyenda { margin: 6px 0 0 24px; font-size: .85rem; color: var(--tinta-suave); }
+.leyenda li { display: flex; align-items: center; gap: 8px; }
+.leyenda li + li { margin-top: 3px; }
+.aviso { margin: 4px 0 0 24px; font-size: .8rem; color: #a3341f; }
+.aviso:empty { display: none; }
+
+/* ---------- Selector de mapa base ---------- */
+#bases { display: flex; border: 1px solid var(--linea); border-radius: 4px; overflow: hidden; }
+#bases label { flex: 1; text-align: center; cursor: pointer; }
+#bases label + label { border-left: 1px solid var(--linea); }
+#bases input { position: absolute; opacity: 0; pointer-events: none; }
+#bases span { display: block; padding: 6px 4px; font-size: .88rem; }
+#bases input:checked + span { background: var(--acento); color: #fff; }
+#bases input:focus-visible + span { outline: 2px solid var(--tinta); outline-offset: -3px; }
+
+/* ---------- Botón de panel ---------- */
+#btn-panel {
+  display: none;
+  position: absolute; z-index: 1100; top: 12px; right: 12px;
+  font: inherit; font-size: .88rem; padding: 6px 12px;
+  background: var(--papel); color: var(--tinta);
+  border: 1px solid var(--linea); border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(29, 42, 46, .18); cursor: pointer;
+}
+
+button:focus-visible, input:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+/* ---------- Ventanas emergentes ---------- */
+.leaflet-popup-content-wrapper { border-radius: 6px; }
+.leaflet-popup-content { margin: 12px 14px; font-family: inherit; font-size: .9rem; }
+.pop h3 { margin: 0 0 6px; font-size: 1rem; line-height: 1.25; }
+.pop table { border-collapse: collapse; width: 100%; }
+.pop th, .pop td { text-align: left; vertical-align: top; padding: 3px 0; }
+.pop th { padding-right: 12px; font-weight: 600; color: var(--tinta-suave); white-space: nowrap; }
+.pop tr + tr th, .pop tr + tr td { border-top: 1px solid #ece9df; }
+
+/* ---------- Pantallas pequeñas ---------- */
+@media (max-width: 640px) {
+  #btn-panel { display: block; }
+  #panel {
+    top: auto; left: 8px; right: 8px; bottom: 8px;
+    width: auto; max-height: 50%;
+  }
+}
