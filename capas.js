@@ -37,7 +37,7 @@ const CAPAS = [
     archivo: "data/COFOPRI.geojson",
     tipo: "poligono",
     visible: true,
-    estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
+    estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 15, radius: 8 },
     popup: {
       titulo: "COFOPRI",
       campos: [
