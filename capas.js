@@ -7,7 +7,7 @@
 const CONFIG = {
   titulo: "Geovisor municipal",
   subtitulo: "Datos territoriales",
-  centro: [-12.046, -77.043],   // [latitud, longitud] de la vista inicial
+  centro: [-11.8690, -77.0711],   // [latitud, longitud] de la vista inicial
   zoom: 14,
   ajustarAlCargar: true,        // true = el mapa se acerca a las capas visibles
   mapaBaseInicial: "claro"      // "claro", "calles" o "satelite"
@@ -32,17 +32,18 @@ const CONFIG = {
 
 const CAPAS = [
   {
-    id: "colegios",
-    nombre: "Instituciones educativas",
-    archivo: "data/colegios.geojson",
-    tipo: "punto",
+    id: "COFOPRI",
+    nombre: "COFOPRI",
+    archivo: "data/COFOPRI.geojson",
+    tipo: "poligono",
     visible: true,
-    estilo: { color: "#7a3e00", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
+    estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
     popup: {
-      titulo: "nombre",
+      titulo: "COFOPRI",
       campos: [
-        { campo: "nivel", etiqueta: "Nivel" },
-        { campo: "alumnos", etiqueta: "Alumnos", formato: "numero" }
+        { campo: "AMBITO", etiqueta: "Ambito" },
+        { campo: "SECTOR", etiqueta: "Sector" },
+        { campo: "PARTIDA", etiqueta: "Partida Registral" }
       ]
     }
   },
