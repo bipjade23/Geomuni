@@ -6,30 +6,16 @@
   <title>Geovisor</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="lib/leaflet-panel-layers.css">
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
   <div id="mapa" role="application" aria-label="Mapa"></div>
-
-  <button id="btn-panel" type="button" aria-expanded="true" aria-controls="panel">Ocultar panel</button>
-
-  <aside id="panel" aria-label="Capas y mapa base">
-    <header>
-      <h1 id="titulo"></h1>
-      <p id="subtitulo"></p>
-    </header>
-    <section>
-      <h2>Capas</h2>
-      <ul id="lista-capas"></ul>
-    </section>
-    <section>
-      <h2>Mapa base</h2>
-      <div id="bases" role="radiogroup" aria-label="Mapa base"></div>
-    </section>
-  </aside>
+  <button id="btn-panel" type="button" aria-expanded="true">Ocultar panel</button>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="lib/leaflet-panel-layers.min.js"></script>
   <script src="capas.js"></script>
   <script src="app.js"></script>
 </body>
