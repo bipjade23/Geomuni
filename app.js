@@ -69,7 +69,7 @@
       })
     }
   };
-  const baseInicial = BASES[CONFIG.mapaBaseInicial] ? CONFIG.mapaBaseInicial : "claro";
+  const baseInicial = BASES[CONFIG.mapaBaseInicial] ? CONFIG.mapaBaseInicial : "Satélite";
 
   /* ---------- Capas: se crean vacías y se llenan al cargar los GeoJSON ---------- */
   CAPAS.forEach(function (capa, i) {
