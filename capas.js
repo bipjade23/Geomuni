@@ -42,7 +42,7 @@ const CAPAS = [
     archivo: "data/COFOPRI.geojson",
     tipo: "poligono",
     visible: true,
-    estilo: { color: "#7a3e00", fillColor: "#e9a23785", weight: 2, fillOpacity: 0.95, radius: 8 },
+    estilo: { color: "#7a3e00", fillColor: "#e9a23785", weight: 1, fillOpacity: 0.95, radius: 8 },
     popup: {
       titulo: "COFOPRI",
       campos: [
@@ -60,7 +60,7 @@ const CAPAS = [
     archivo: "data/Habilitaciones_Urbanas.geojson",
     tipo: "poligono",
     visible: true,
-    estilo: { color: "#22db09", fillColor: "#55e93783", weight: 2, fillOpacity: 0.95, radius: 8 },
+    estilo: { color: "#22db09", fillColor: "#55e93783", weight: 1, fillOpacity: 0.95, radius: 8 },
     popup: {
       titulo: "Hab. Urbanas",
       campos: [
