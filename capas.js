@@ -30,26 +30,30 @@ const CONFIG = {
      visible    true = aparece activada al abrir el visor
      estilo     color, fillColor, weight, fillOpacity (radius para puntos)
      categorias (opcional) colorea según un campo de la tabla
+     etiqueta   (opcional) texto fijo sobre cada elemento:
+                campo = campo de la tabla que se muestra
+                zoomMinimo = zoom desde el cual se ven (menos desorden al alejar)
+                formato = "numero" (opcional)
      popup      titulo = campo usado como título
                 campos = lista de campos que se muestran, con su etiqueta
    --------------------------------------------------------------------- */
 
 const CAPAS = [
+  
   {
     id: "COFOPRI",
     nombre: "COFOPRI",
-    grupo: "Ambitos Urbanos",
     archivo: "data/COFOPRI.geojson",
     tipo: "poligono",
-    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
     visible: true,
-    estilo: { color: "#7a3e00", fillColor: "#e9a23785", weight: 1, fillOpacity: 0.95, radius: 8 },
+    estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
+    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
     popup: {
       titulo: "COFOPRI",
       campos: [
-        { campo: "AMBITO", etiqueta: "Nombre" },
+        { campo: "AMBITO", etiqueta: "Ambito" },
         { campo: "SECTOR", etiqueta: "Sector" },
-        { campo: "PARTIDA_R", etiqueta: "Partida Registral" }
+        { campo: "PARTIDA", etiqueta: "Partida Registral" }
       ]
     }
   },
@@ -63,6 +67,7 @@ const CAPAS = [
     etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
     visible: true,
     estilo: { color: "#22db09", fillColor: "#55e93783", weight: 1, fillOpacity: 0.95, radius: 8 },
+    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
     popup: {
       titulo: "Hab. Urbanas",
       campos: [
@@ -84,6 +89,7 @@ const CAPAS = [
     tipo: "poligono",
     visible: true,
     estilo: { color: "#2f7d4f", fillColor: "#6fbf8b", weight: 1.5, fillOpacity: 0.45 },
+    etiqueta: { campo: "nombre", zoomMinimo: 15 },
     popup: {
       titulo: "nombre",
       campos: [

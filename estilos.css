@@ -176,3 +176,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--acento); ou
 @media (max-width: 640px) {
   #btn-panel { top: auto; right: auto; bottom: 40px; left: 10px; }
 }
+
+/* Etiquetas permanentes sobre los elementos del mapa */
+.leaflet-tooltip.etiqueta-capa {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--tinta);
+  font-size: .8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  /* contorno blanco para que se lea sobre cualquier fondo */
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 0 4px #fff;
+}
+.leaflet-tooltip.etiqueta-capa::before { display: none; }

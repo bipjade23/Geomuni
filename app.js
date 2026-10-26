@@ -56,6 +56,13 @@
   L.control.scale({ imperial: false, position: "bottomleft" }).addTo(mapa);
 
   const BASES = {
+    claro: {
+      nombre: "Claro",
+      capa: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 20, subdomains: "abcd",
+        attribution: "&copy; OpenStreetMap &copy; CARTO"
+      })
+    },
     calles: {
       nombre: "Calles",
       capa: L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -69,7 +76,7 @@
       })
     }
   };
-  const baseInicial = BASES[CONFIG.mapaBaseInicial] ? CONFIG.mapaBaseInicial : "Satélite";
+  const baseInicial = BASES[CONFIG.mapaBaseInicial] ? CONFIG.mapaBaseInicial : "claro";
 
   /* ---------- Capas: se crean vacías y se llenan al cargar los GeoJSON ---------- */
   CAPAS.forEach(function (capa, i) {
@@ -83,10 +90,36 @@
         return L.circleMarker(latlng, Object.assign({ radius: 7, pane: capa.id }, estiloDe(capa, f)));
       },
       onEachFeature: function (f, lyr) {
-        lyr.bindPopup(htmlPopup(capa, f.properties || {}), { maxWidth: 300 });
+        const props = f.properties || {};
+        lyr.bindPopup(htmlPopup(capa, props), { maxWidth: 300 });
+
+        // Etiqueta permanente con el valor de un campo (si la capa define "etiqueta")
+        const et = capa.etiqueta;
+        if (et && props[et.campo] !== null && props[et.campo] !== undefined && props[et.campo] !== "") {
+          lyr.bindTooltip(esc(formatear(props[et.campo], et)), {
+            permanent: true,
+            direction: capa.tipo === "punto" ? "top" : "center",
+            offset: capa.tipo === "punto" ? [0, -8] : [0, 0],
+            className: "etiqueta-capa et-" + capa.id,
+            opacity: 1
+          });
+        }
       }
     });
   });
+
+  /* ---------- Etiquetas: se ocultan por debajo del zoom mínimo de cada capa ---------- */
+  const reglasEtiquetas = document.createElement("style");
+  document.head.appendChild(reglasEtiquetas);
+  function actualizarEtiquetas() {
+    const z = mapa.getZoom();
+    reglasEtiquetas.textContent = CAPAS
+      .filter(function (c) { return c.etiqueta && c.etiqueta.zoomMinimo && z < c.etiqueta.zoomMinimo; })
+      .map(function (c) { return ".et-" + c.id + "{visibility:hidden}"; })
+      .join("\n");
+  }
+  mapa.on("zoomend", actualizarEtiquetas);
+  actualizarEtiquetas();
 
   /* ---------- Panel de capas (plugin Leaflet Panel Layers) ---------- */
   const colapsados = CONFIG.gruposColapsados || [];
