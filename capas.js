@@ -43,11 +43,12 @@ const CAPAS = [
   {
     id: "COFOPRI",
     nombre: "COFOPRI",
+    grupo: "Ambitos Urbanos",
     archivo: "data/COFOPRI.geojson",
     tipo: "poligono",
     visible: true,
     estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
-    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
+    etiqueta: { campo: "AMBITO", zoomMinimo: 11 },
     popup: {
       titulo: "COFOPRI",
       campos: [
@@ -64,7 +65,7 @@ const CAPAS = [
     grupo: "Ambitos Urbanos",
     archivo: "data/Habilitaciones_Urbanas.geojson",
     tipo: "poligono",
-    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
+    etiqueta: { campo: "AMBITO", zoomMinimo: 11 },
     visible: true,
     estilo: { color: "#22db09", fillColor: "#55e93783", weight: 1, fillOpacity: 0.95, radius: 8 },
     etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
