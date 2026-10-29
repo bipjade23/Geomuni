@@ -3,19 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Geovisor</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <link rel="stylesheet" href="lib/leaflet-panel-layers.css">
-  <link rel="stylesheet" href="estilos.css">
+  <title>Geovisor Municipal</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="mapa" role="application" aria-label="Mapa"></div>
-  <button id="btn-panel" type="button" aria-expanded="true">Ocultar panel</button>
+  <header class="barra">
+    <img class="logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+    <div class="titulos">
+      <h1>Geovisor Municipal</h1>
+      <p class="subtitulo">Subgerencia de Saneamiento y Catastro</p>
+    </div>
+    <button id="btn-extra" class="btn-extra" type="button">Botón</button>
+  </header>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="lib/leaflet-panel-layers.min.js"></script>
+  <main>
+    <aside id="panel" class="panel">
+      <p class="panel-titulo">Datos territoriales</p>
+      <div id="panel-contenido"></div>
+    </aside>
+    <button id="btn-panel" class="btn-panel" type="button" aria-label="Mostrar u ocultar panel">☰</button>
+    <div id="mapa"></div>
+    <button id="btn-leyenda" class="btn-leyenda" type="button">Leyenda</button>
+    <aside id="leyenda" class="leyenda">
+      <h2 class="panel-titulo">Leyenda</h2>
+      <div id="leyenda-contenido"></div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="capas.js"></script>
   <script src="app.js"></script>
 </body>

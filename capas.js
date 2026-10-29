@@ -1,102 +1,71 @@
-/* =====================================================================
-   CONFIGURACIÓN DEL GEOVISOR
-   Este es el único archivo que necesitas editar para cambiar el título,
-   agregar capas, cambiar colores o decidir qué se muestra en los pop-ups.
-   ===================================================================== */
+// ====== CAPAS DEL GEOVISOR ======
+// Edita este archivo para agregar, quitar o renombrar capas.
+// - nombre:  texto que se ve en el panel
+// - archivo: ruta del GeoJSON dentro de la carpeta data/
+// - color:   color del relleno, el borde y la muestra del panel (hex)
+// - id:      identificador único, sin espacios ni tildes
+// Para una capa nueva, copia una línea existente y cambia sus valores.
+// Para un grupo nuevo, copia un bloque { nombre: ..., capas: [...] }.
 
-const CONFIG = {
-  titulo: "Geovisor municipal",
-  subtitulo: "Datos territoriales",
-  centro: [-12.046, -77.043],   // [latitud, longitud] de la vista inicial
-  zoom: 14,
-  ajustarAlCargar: true,        // true = el mapa se acerca a las capas visibles
-  mapaBaseInicial: "claro",     // "claro", "calles" o "satelite"
-  gruposColapsados: [],         // nombres de grupos que arrancan cerrados, ej. ["Red vial"]
-  panelOcultoEnCelular: true    // en pantallas pequeñas el panel arranca oculto
-};
-
-/* ---------------------------------------------------------------------
-   LISTA DE CAPAS
-   El orden de la lista define el apilado en el mapa: la primera capa
-   queda por encima de las demás. En el panel, las capas se agrupan según
-   su campo "grupo" (los grupos se pueden desplegar y marcar de una vez).
-
-   Campos de cada capa:
-     id         nombre corto, sin espacios ni tildes, único
-     nombre     texto que se ve en el panel
-     grupo      (opcional) nombre del grupo desplegable del panel
-     archivo    ruta del GeoJSON (en EPSG:4326)
-     tipo       "poligono", "linea" o "punto" (solo para el ícono del panel)
-     visible    true = aparece activada al abrir el visor
-     estilo     color, fillColor, weight, fillOpacity (radius para puntos)
-     categorias (opcional) colorea según un campo de la tabla
-     etiqueta   (opcional) texto fijo sobre cada elemento:
-                campo = campo de la tabla que se muestra
-                zoomMinimo = zoom desde el cual se ven (menos desorden al alejar)
-                formato = "numero" (opcional)
-     popup      titulo = campo usado como título
-                campos = lista de campos que se muestran, con su etiqueta
-   --------------------------------------------------------------------- */
-
-const CAPAS = [
-  
-  {
+// Cada grupo tiene capas; cada capa apunta a un GeoJSON en /data
+const GRUPOS = [
+  { nombre: 'Ámbitos Urbanos', capas: [
+    {
     id: "COFOPRI",
     nombre: "COFOPRI",
-    grupo: "Ambitos Urbanos",
     archivo: "data/COFOPRI.geojson",
     tipo: "poligono",
     visible: true,
-    estilo: { color: "#F59C27", fillColor: "#e39b2d", weight: 2, fillOpacity: 0.95, radius: 8 },
-    etiqueta: { campo: "AMBITO", zoomMinimo: 11 },
-    popup: {
-      titulo: "COFOPRI",
-      campos: [
-        { campo: "AMBITO", etiqueta: "Ambito" },
-        { campo: "SECTOR", etiqueta: "Sector" },
-        { campo: "PARTIDA", etiqueta: "Partida Registral" }
-      ]
-    }
-  },
-
-  {
-    id: "HAB_URBANA",
-    nombre: "Habilitaciones Urbanas",
-    grupo: "Ambitos Urbanos",
-    archivo: "data/Habilitaciones_Urbanas.geojson",
-    tipo: "poligono",
-    etiqueta: { campo: "AMBITO", zoomMinimo: 11 },
-    visible: true,
-    estilo: { color: "#22db09", fillColor: "#55e93783", weight: 1, fillOpacity: 0.95, radius: 8 },
-    etiqueta: { campo: "AMBITO", zoomMinimo: 15 },
-    popup: {
-      titulo: "Hab. Urbanas",
-      campos: [
-        { campo: "AMBITO", etiqueta: "Nombre" },
-        { campo: "SECTOR", etiqueta: "Sector" },
-        { campo: "TIPO", etiqueta: "Tipo" },
-        { campo: "PROCESO", etiqueta: "Proceso" },
-        { campo: "ANIO", etiqueta: "Año" },
-        { campo: "PARTIDA_R", etiqueta: "Partida Registral" }
-      ]
-    }
-  },
-
-  {
-    id: "parques",
-    nombre: "Parques y áreas verdes",
-    grupo: "Equipamiento y espacios públicos",
-    archivo: "data/parques.geojson",
-    tipo: "poligono",
-    visible: true,
-    estilo: { color: "#2f7d4f", fillColor: "#6fbf8b", weight: 1.5, fillOpacity: 0.45 },
-    etiqueta: { campo: "nombre", zoomMinimo: 15 },
+    estilo: { color: "#00ff00", fillColor: "#f39d1279", weight: 2, fillOpacity: 0.95, radius: 8 },
     popup: {
       titulo: "nombre",
       campos: [
-        { campo: "tipo", etiqueta: "Tipo" },
-        { campo: "area_m2", etiqueta: "Área (m²)", formato: "numero" }
+        { campo: "AMBITO", etiqueta: "Nombre" },
+        { campo: "SECTOR", etiqueta: "Sector" },
+        { campo: "PARTIDA_R", etiqueta: "Partida Registral" },
+      ]
+        }
+    },
+    {
+    id: "HAB_URBANA",
+    nombre: "Habilitaciones Urbanas",
+    archivo: "data/HAB_URBANA.geojson",
+    tipo: "poligono",
+    visible: true,
+    estilo: { color: "#00ff00", fillColor: "#2ecc407e", weight: 2, fillOpacity: 0.95, radius: 8 },
+    popup: {
+      titulo: "nombre",
+      campos: [
+        { campo: "AMBITO", etiqueta: "Nombre" },
+        { campo: "SECTOR", etiqueta: "Sector" },
+        { campo: "PARTIDA_R", etiqueta: "Partida Registral" },
       ]
     }
-  }
+  },
+  {
+    id: "ORD_038",
+    nombre: "Ordenanza N.º038",
+    archivo: "data/ORD_038.geojson",
+    tipo: "poligono",
+    visible: true,
+    estilo: { color: "#ffff00", fillColor: "#ffff007a", weight: 0.5, fillOpacity: 0.95, radius: 8 },
+    popup: {
+      titulo: "nombre",
+      campos: [
+        { campo: "AMBITO", etiqueta: "Nombre" },
+        { campo: "SECTOR", etiqueta: "Sector" }
+      ]
+    }
+  },
+  ]},
+  { nombre: 'Vias', capas: [
+    { id: 'Vias Locales', nombre: 'Parques y áreas verdes', archivo: 'data/parques.geojson', color: '#2e8b57' },
+    { id: 'parques', nombre: 'Parques y áreas verdes', archivo: 'data/parques.geojson', color: '#2e8b57' }
+  ]},
+  { nombre: 'Espacios públicos', capas: [] },
+  { nombre: 'Espacios públicos', capas: [] }   // agrega capas aquí
+
 ];
+
+// Campos que se muestran en el popup (si no existe, se muestran todos)
+//const POPUP_CAMPOS = null; // ejemplo: ['nombre', 'area_m2']

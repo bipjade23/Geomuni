@@ -1,267 +1,178 @@
-/* Lógica del geovisor. Normalmente no necesitas tocar este archivo:
-   todo lo configurable está en capas.js */
-(function () {
-  "use strict";
+// ====== CONFIGURACIÓN: edita aquí las capas, colores y archivos ======
+const CENTRO = [-11.865, -77.075];   // Puente Piedra (ajusta a tu distrito)
+const ZOOM = 13;
 
-  document.title = CONFIG.titulo;
+const MAPAS_BASE = [
+  { id: 'sat', nombre: 'Satélite (Esri)', activo: true,
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attr: 'Imágenes © Esri' },
+  { id: 'osm', nombre: 'Calles (OpenStreetMap)',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attr: '© OpenStreetMap' }
+];
 
-  /* ---------- Utilidades ---------- */
-  function esc(valor) {
-    return String(valor).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
+// Los grupos de capas y los campos del popup se editan en capas.js
 
-  function formatear(valor, campo) {
-    if (campo.formato === "numero" && !isNaN(Number(valor))) {
-      return Number(valor).toLocaleString("es-PE", { maximumFractionDigits: 2 });
-    }
-    return valor;
-  }
+// ====== MAPA ======
+const mapa = L.map('mapa', { zoomControl: false }).setView(CENTRO, ZOOM);
+L.control.zoom({ position: 'topright' }).addTo(mapa);
+L.control.scale({ metric: true, imperial: false }).addTo(mapa);
 
-  function estiloDe(capa, feature) {
-    const estilo = Object.assign({}, capa.estilo);
-    if (capa.categorias && feature) {
-      const color = capa.categorias.colores[feature.properties[capa.categorias.campo]];
-      if (color) { estilo.color = color; estilo.fillColor = color; }
-    }
-    return estilo;
-  }
+const bases = {};
+MAPAS_BASE.forEach(b => {
+  bases[b.id] = L.tileLayer(b.url, { attribution: b.attr, maxZoom: 19 });
+  if (b.activo) bases[b.id].addTo(mapa);
+});
 
-  function htmlPopup(capa, props) {
-    const cfg = capa.popup || {};
-    const titulo = cfg.titulo && props[cfg.titulo] ? props[cfg.titulo] : capa.nombre;
-    const campos = cfg.campos || Object.keys(props).map(function (k) { return { campo: k, etiqueta: k }; });
-    const filas = campos
-      .filter(function (c) { return props[c.campo] !== null && props[c.campo] !== undefined && props[c.campo] !== ""; })
-      .map(function (c) {
-        return "<tr><th>" + esc(c.etiqueta) + "</th><td>" + esc(formatear(props[c.campo], c)) + "</td></tr>";
-      }).join("");
-    return '<div class="pop"><h3>' + esc(titulo) + "</h3>" + (filas ? "<table>" + filas + "</table>" : "") + "</div>";
-  }
+// ====== CAPAS ======
+const capas = {};   // id -> L.GeoJSON
 
-  function muestra(capa, color) {
-    const s = document.createElement("span");
-    s.className = "muestra " + capa.tipo;
-    const e = capa.estilo || {};
-    const c = color || e.color;
-    s.style.borderColor = c;
-    s.style.background = capa.tipo === "linea" ? c : (color || e.fillColor || e.color);
-    return s;
-  }
-
-  /* ---------- Mapa y mapas base ---------- */
-  const mapa = L.map("mapa", { zoomControl: false }).setView(CONFIG.centro, CONFIG.zoom);
-  L.control.zoom({ position: "bottomright" }).addTo(mapa);
-  L.control.scale({ imperial: false, position: "bottomleft" }).addTo(mapa);
-
-  const BASES = {
-    claro: {
-      nombre: "Claro",
-      capa: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 20, subdomains: "abcd",
-        attribution: "&copy; OpenStreetMap &copy; CARTO"
-      })
-    },
-    calles: {
-      nombre: "Calles",
-      capa: L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19, attribution: "&copy; OpenStreetMap"
-      })
-    },
-    satelite: {
-      nombre: "Satélite",
-      capa: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19, attribution: "Imágenes &copy; Esri"
-      })
-    }
+function estiloDe(def) {
+  const e = def.estilo || {};
+  const color = e.color || def.color || '#3388ff';
+  return {
+    color,
+    weight: e.weight ?? 2,
+    fillColor: e.fillColor || def.color || color,
+    fillOpacity: e.fillOpacity ?? 0.35,
+    radius: e.radius ?? 6
   };
-  const baseInicial = BASES[CONFIG.mapaBaseInicial] ? CONFIG.mapaBaseInicial : "claro";
+}
 
-  /* ---------- Capas: se crean vacías y se llenan al cargar los GeoJSON ---------- */
-  CAPAS.forEach(function (capa, i) {
-    // Cada capa tiene su propio nivel de apilado: la primera de la lista queda arriba
-    mapa.createPane(capa.id).style.zIndex = 400 + (CAPAS.length - i);
+function popupHtml(props, def) {
+  props = props || {};
+  let campos;
+  if (def.popup && def.popup.campos) {
+    campos = def.popup.campos;
+  } else {
+    const lista = (typeof POPUP_CAMPOS !== 'undefined' && POPUP_CAMPOS) || Object.keys(props);
+    campos = lista.map(k => ({ campo: k, etiqueta: k }));
+  }
+  if (!campos.length) return 'Sin atributos';
+  return '<table>' + campos.map(c =>
+    `<tr><th>${c.etiqueta}</th><td>${props[c.campo] ?? ''}</td></tr>`).join('') + '</table>';
+}
 
-    capa._grupo = L.geoJSON(null, {
-      pane: capa.id,
-      style: function (f) { return estiloDe(capa, f); },
-      pointToLayer: function (f, latlng) {
-        return L.circleMarker(latlng, Object.assign({ radius: 7, pane: capa.id }, estiloDe(capa, f)));
-      },
-      onEachFeature: function (f, lyr) {
-        const props = f.properties || {};
-        lyr.bindPopup(htmlPopup(capa, props), { maxWidth: 300 });
-
-        // Etiqueta permanente con el valor de un campo (si la capa define "etiqueta")
-        const et = capa.etiqueta;
-        if (et && props[et.campo] !== null && props[et.campo] !== undefined && props[et.campo] !== "") {
-          lyr.bindTooltip(esc(formatear(props[et.campo], et)), {
-            permanent: true,
-            direction: capa.tipo === "punto" ? "top" : "center",
-            offset: capa.tipo === "punto" ? [0, -8] : [0, 0],
-            className: "etiqueta-capa et-" + capa.id,
-            opacity: 1
-          });
+async function cargarCapa(def) {
+  try {
+    const datos = await (await fetch(def.archivo)).json();
+    const est = estiloDe(def);
+    capas[def.id] = L.geoJSON(datos, {
+      style: f => {
+        let relleno = est.fillColor;
+        if (def.categorias) {
+          const v = String(f.properties?.[def.categorias.campo] ?? '');
+          const it = def.categorias.items.find(i => String(i.valor) === v);
+          relleno = it ? it.color : '#cccccc';   // gris si no coincide ninguna categoría
         }
-      }
+        return { color: est.color, weight: est.weight, fillColor: relleno, fillOpacity: est.fillOpacity };},
+      pointToLayer: (f, ll) => L.circleMarker(ll, { radius: est.radius, color: est.color, weight: est.weight, fillColor: est.fillColor, fillOpacity: est.fillOpacity }),
+      onEachFeature: (f, l) => l.bindPopup(popupHtml(f.properties, def))
     });
-  });
-
-  /* ---------- Etiquetas: se ocultan por debajo del zoom mínimo de cada capa ---------- */
-  const reglasEtiquetas = document.createElement("style");
-  document.head.appendChild(reglasEtiquetas);
-  function actualizarEtiquetas() {
-    const z = mapa.getZoom();
-    reglasEtiquetas.textContent = CAPAS
-      .filter(function (c) { return c.etiqueta && c.etiqueta.zoomMinimo && z < c.etiqueta.zoomMinimo; })
-      .map(function (c) { return ".et-" + c.id + "{visibility:hidden}"; })
-      .join("\n");
+    return true;
+  } catch (e) {
+    console.warn('No se pudo cargar', def.archivo, e);
+    return false;
   }
-  mapa.on("zoomend", actualizarEtiquetas);
-  actualizarEtiquetas();
+}
+// ====== LEYENDA ======
+function itemsLeyenda(def) {
+  if (def.categorias) return def.categorias.items.map(i => ({ etiqueta: i.etiqueta, relleno: i.color, borde: est0(def).color }));
+  const e = estiloDe(def);
+  return [{ etiqueta: def.nombre, relleno: e.fillColor, borde: e.color }];
+}
+function est0(def) { return estiloDe(def); }
 
-  /* ---------- Panel de capas (plugin Leaflet Panel Layers) ---------- */
-  const colapsados = CONFIG.gruposColapsados || [];
+function actualizarLeyenda() {
+  const cont = document.getElementById('leyenda-contenido');
+  let html = '';
+  GRUPOS.forEach(g => g.capas.forEach(def => {
+    if (!capas[def.id] || !mapa.hasLayer(capas[def.id])) return;
+    html += `<div class="leyenda-capa"><h3>${def.nombre}</h3>` +
+      itemsLeyenda(def).map(i =>
+        `<div class="leyenda-item"><span class="muestra" style="background:${i.relleno};border:1px solid ${i.borde}"></span><span>${i.etiqueta}</span></div>`
+      ).join('') + '</div>';
+  }));
+  cont.innerHTML = html || '<div class="leyenda-vacia">Activa una capa para ver su leyenda.</div>';
+}
+// ====== PANEL ======
+const cont = document.getElementById('panel-contenido');
 
-  function definicion(capa) {
-    return {
-      name: esc(capa.nombre),
-      icon: muestra(capa).outerHTML,
-      layer: capa._grupo,
-      active: !!capa.visible,
-      _capa: capa
+function plegable(titulo, cuerpo, abierto, extraCab) {
+  const g = document.createElement('div');
+  g.className = 'grupo' + (abierto ? '' : ' cerrado');
+  g.innerHTML = `<div class="grupo-cab"><button class="plegar" type="button">${abierto ? '−' : '+'}</button><span class="nombre">${titulo}</span></div><div class="grupo-cuerpo"></div>`;
+  const cab = g.querySelector('.grupo-cab');
+  if (extraCab) cab.appendChild(extraCab);
+  g.querySelector('.grupo-cuerpo').appendChild(cuerpo);
+  g.querySelector('.plegar').onclick = e => {
+    const cerrado = g.classList.toggle('cerrado');
+    e.target.textContent = cerrado ? '+' : '−';
+  };
+  return g;
+}
+
+// Mapas base (radio)
+const cuerpoBase = document.createElement('div');
+MAPAS_BASE.forEach(b => {
+  const f = document.createElement('label');
+  f.className = 'capa';
+  f.innerHTML = `<input type="radio" name="base" ${b.activo ? 'checked' : ''}><span class="nombre">${b.nombre}</span>`;
+  f.querySelector('input').onchange = () => {
+    Object.values(bases).forEach(l => mapa.removeLayer(l));
+    bases[b.id].addTo(mapa).bringToBack();
+  };
+  cuerpoBase.appendChild(f);
+});
+cont.appendChild(plegable('Mapa base', cuerpoBase, false));
+
+// Grupos de capas
+GRUPOS.forEach(grupo => {
+  const cuerpo = document.createElement('div');
+  const checks = [];
+
+  grupo.capas.forEach(def => {
+    const fila = document.createElement('div');
+    fila.className = 'capa';
+    const est = estiloDe(def);
+    const fondo = def.categorias
+      ? `linear-gradient(90deg, ${def.categorias.items.slice(0, 5).map(i => i.color).join(',')})`
+      : est.fillColor;
+    fila.innerHTML = `<input type="checkbox" aria-label="${def.nombre}"><span class="muestra" style="background:${fondo};border:${Math.max(est.weight, 1)}px solid ${est.color}"></span><span class="nombre">${def.nombre}</span>`;
+    const chk = fila.querySelector('input');
+    checks.push(chk);
+
+    chk.onchange = async () => {
+      if (chk.checked) {
+        if (!capas[def.id] && !(await cargarCapa(def))) { chk.checked = false; return; }
+        capas[def.id].addTo(mapa);
+      } else if (capas[def.id]) {
+        mapa.removeLayer(capas[def.id]);
+      }
+      actualizarGrupo();
+      actualizarLeyenda();
     };
-  }
-
-  // Agrupa las capas según su campo "grupo", respetando el orden de aparición
-  const overlays = [];
-  const gruposPorNombre = {};
-  CAPAS.forEach(function (capa) {
-    if (!capa.grupo) { overlays.push(definicion(capa)); return; }
-    if (!gruposPorNombre[capa.grupo]) {
-      gruposPorNombre[capa.grupo] = {
-        group: capa.grupo,
-        collapsed: colapsados.indexOf(capa.grupo) !== -1,
-        layers: []
-      };
-      overlays.push(gruposPorNombre[capa.grupo]);
-    }
-    gruposPorNombre[capa.grupo].layers.push(definicion(capa));
+    cuerpo.appendChild(fila);
   });
 
-  const baseLayers = [{
-    group: "Mapa base",
-    collapsed: true,
-    layers: Object.keys(BASES).map(function (clave) {
-      return { name: esc(BASES[clave].nombre), layer: BASES[clave].capa, active: clave === baseInicial };
-    })
-  }];
+  // Casilla del grupo: activa/desactiva todas sus capas
+  const chkGrupo = document.createElement('input');
+  chkGrupo.type = 'checkbox';
+  chkGrupo.setAttribute('aria-label', grupo.nombre);
+  chkGrupo.onchange = () => checks.forEach(c => { if (c.checked !== chkGrupo.checked) { c.checked = chkGrupo.checked; c.onchange(); } });
+  function actualizarGrupo() { chkGrupo.checked = checks.length > 0 && checks.every(c => c.checked); }
 
-  // Contenido extra de cada capa: leyenda, botón "Acercar" y mensaje de error
-  function contenidoExtra(obj) {
-    const capa = obj._capa;
-    if (!capa) { return document.createDocumentFragment(); }
+  cont.appendChild(plegable(grupo.nombre, cuerpo, false, chkGrupo));
+});
 
-    const cont = document.createElement("div");
-    cont.className = "capa-extra";
+// Panel en celular
+document.getElementById('btn-panel').onclick = () => document.getElementById('panel').classList.toggle('oculto');
+if (window.innerWidth <= 640) document.getElementById('panel').classList.add('oculto');
 
-    if (capa.categorias) {
-      const ley = document.createElement("ul");
-      ley.className = "leyenda";
-      Object.keys(capa.categorias.colores).forEach(function (valor) {
-        const li = document.createElement("li");
-        li.append(muestra(capa, capa.categorias.colores[valor]), document.createTextNode(valor));
-        ley.appendChild(li);
-      });
-      cont.appendChild(ley);
-    }
+// Botón superior derecho: personaliza su acción aquí
+document.getElementById('btn-extra').onclick = () => alert('Botón de ejemplo');
 
-    const boton = document.createElement("button");
-    boton.type = "button";
-    boton.className = "acercar";
-    boton.textContent = "Acercar";
-    boton.title = "Acercar a esta capa";
-    boton.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      // Si la capa está apagada, se enciende con su propia casilla
-      const item = boton.closest(".leaflet-panel-layers-item");
-      const casilla = item && item.querySelector("input.leaflet-panel-layers-selector");
-      if (casilla && !casilla.checked) { casilla.click(); }
-      const b = capa._grupo.getBounds();
-      if (b.isValid()) { mapa.fitBounds(b, { padding: [40, 40], maxZoom: 18 }); }
-    });
-    cont.appendChild(boton);
-
-    const aviso = document.createElement("p");
-    aviso.className = "capa-aviso";
-    aviso.setAttribute("data-capa", capa.id);
-    aviso.textContent = capa._error || "";
-    cont.appendChild(aviso);
-
-    return cont;
-  }
-
-  const panel = L.control.panelLayers(baseLayers, overlays, {
-    position: "topleft",
-    compact: true,
-    compactOffset: 70,
-    collapsibleGroups: true,   // los grupos se pueden desplegar y cerrar
-    selectorGroup: true,       // casilla en cada grupo para encender o apagar todo
-    autoZIndex: false,
-    className: "panel-geovisor",
-    title: esc(CONFIG.titulo),
-    buildItem: contenidoExtra
-  }).addTo(mapa);
-
-  const contenedor = panel.getContainer();
-  if (CONFIG.subtitulo) {
-    const sub = document.createElement("p");
-    sub.className = "subtitulo";
-    sub.textContent = CONFIG.subtitulo;
-    const titulo = contenedor.querySelector(".leaflet-panel-layers-title");
-    titulo.insertAdjacentElement("afterend", sub);
-  }
-
-  /* ---------- Botón para ocultar el panel ---------- */
-  const btnPanel = document.getElementById("btn-panel");
-  function mostrarPanel(mostrar) {
-    contenedor.classList.toggle("oculto", !mostrar);
-    btnPanel.textContent = mostrar ? "Ocultar panel" : "Mostrar panel";
-    btnPanel.setAttribute("aria-expanded", String(mostrar));
-  }
-  btnPanel.addEventListener("click", function () {
-    mostrarPanel(contenedor.classList.contains("oculto"));
-  });
-  if (CONFIG.panelOcultoEnCelular && window.matchMedia("(max-width: 640px)").matches) {
-    mostrarPanel(false);
-  }
-
-  /* ---------- Carga de datos ---------- */
-  const cargas = CAPAS.map(function (capa) {
-    return fetch(capa.archivo)
-      .then(function (r) {
-        if (!r.ok) { throw new Error("HTTP " + r.status); }
-        return r.json();
-      })
-      .then(function (datos) { capa._grupo.addData(datos); })
-      .catch(function () {
-        capa._error = "No se pudo cargar " + capa.archivo + ". Revisa que el archivo exista y que el nombre coincida.";
-        const aviso = document.querySelector('.capa-aviso[data-capa="' + capa.id + '"]');
-        if (aviso) { aviso.textContent = capa._error; }
-      });
-  });
-
-  Promise.all(cargas).then(function () {
-    if (!CONFIG.ajustarAlCargar) { return; }
-    let limites = null;
-    CAPAS.forEach(function (capa) {
-      const b = capa._grupo.getBounds();
-      if (mapa.hasLayer(capa._grupo) && b.isValid()) {
-        limites = limites ? limites.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
-      }
-    });
-    if (limites) { mapa.fitBounds(limites, { padding: [40, 40], maxZoom: 17 }); }
-  });
-})();
+const panelLeyenda = document.getElementById('leyenda');
+document.getElementById('btn-leyenda').onclick = () => panelLeyenda.classList.toggle('oculto');
+if (window.innerWidth <= 640) panelLeyenda.classList.add('oculto');
+actualizarLeyenda();
