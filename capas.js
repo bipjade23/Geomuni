@@ -120,8 +120,8 @@ const ESTILOS = {
 const POPUPS = {
   // Funciona con el archivo de ejemplo limite_distrital.geojson (columnas NOMBRE, CODIGO, AREA_KM2)
   distrito:{
-    titulo:'{NOMBRE}',
-    campos:[ { campo:'CODIGO', etiqueta:'Código' },
+    titulo:'COFOPRI',
+    campos:[ { campo:'AMBITO', etiqueta:'Nombre' },
              { campo:'AREA_KM2', etiqueta:'Superficie', decimales:1, sufijo:' km²' } ],
     pie:'Fuente: Municipalidad (ejemplo)'
   },
@@ -152,7 +152,7 @@ const CATEGORIAS = [
     { n:'Límite provincial',    estilo:{ color:'#7a3db8', grosor:3, relleno:false, discontinua:'6 5' } },
 
     // CAPA REAL: usa una receta de estilo y otra de popup, con su ficha «i» y búsqueda por columnas
-    { n:'COFOPRI', f:'data/COFOPRI.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
+    { n:'COFOPRI', f:'data/COFOPRI3.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
       buscar:['AMBITO'], estilo:ESTILOS.COFOPRI, popup:POPUPS.distrito },
     { n:'Habilitación', f:'data/COFOPRI-GJ.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
       buscar:['AMBITO'], estilo:ESTILOS.HAB_URBANA, popup:POPUPS.distrito },
