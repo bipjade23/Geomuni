@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"NOMBRE": "Distrito de ejemplo", "AREA_KM2": 12.5, "CODIGO": "150000"}, "geometry": {"type": "Polygon", "coordinates": [[[-77.105, -11.889], [-77.039, -11.892], [-77.036, -11.844], [-77.081, -11.835], [-77.105, -11.853], [-77.105, -11.889]]]}}]}

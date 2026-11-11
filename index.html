@@ -1,38 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Geovisor Municipal</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<title>Geovisor municipal MDPP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Geovisor municipal de saneamiento y catastro">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231769d6'/%3E%3Cpath d='M16 6a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="barra">
-    <img class="logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
-    <div class="titulos">
-      <h1>Geovisor Municipal</h1>
-      <p class="subtitulo">Subgerencia de Saneamiento y Catastro</p>
+<header>
+  <!-- Logo: copia tu imagen en img/logo.png y aparecerá aquí. Si no existe, se omite sola. -->
+  <img class="logo" src="img/LOGO_ESCUDO.png" alt="Logo de la municipalidad" onerror="this.remove()">
+  <h1>Geovisor Municipal</h1>
+  <span class="sep"></span>
+  <p class="sub">Subgerencia de Saneamiento y Catastro</p>
+  <div class="acciones">
+    <select id="base" title="Mapa base" aria-label="Mapa base">
+      <option value="osm">Mapa base: Calles</option>
+      <option value="sat">Mapa base: Satélite</option>
+      <option value="none">Sin mapa base</option>
+    </select>
+    <button id="bHome">Inicio</button>
+    <button id="bShare" title="Copiar un enlace con las capas y la vista actuales">Compartir</button>
+    <button id="bClear">Quitar capas</button>
+  </div>
+</header>
+<main>
+  <aside id="side">
+    <div class="top">
+      <input id="q" placeholder="Buscar capa o elemento…" autocomplete="off" aria-label="Buscar capa o elemento">
+      <div class="tabs"><button id="tAll" class="on">Todas</button><button id="tAct">Activas (0)</button></div>
     </div>
-    <button id="btn-extra" class="btn-extra" type="button">Botón</button>
-  </header>
+    <div id="res" hidden></div>
+    <div id="list"></div>
+  </aside>
+  <div id="map"></div>
 
-  <main>
-    <aside id="panel" class="panel">
-      <p class="panel-titulo">Datos territoriales</p>
-      <div id="panel-contenido"></div>
-    </aside>
-    <button id="btn-panel" class="btn-panel" type="button" aria-label="Mostrar u ocultar panel">☰</button>
-    <div id="mapa"></div>
-    <button id="btn-leyenda" class="btn-leyenda" type="button">Leyenda</button>
-    <aside id="leyenda" class="leyenda">
-      <h2 class="panel-titulo">Leyenda</h2>
-      <div id="leyenda-contenido"></div>
-    </aside>
-  </main>
+  <div class="tools">
+    <button id="zi" title="Acercar" aria-label="Acercar">+</button>
+    <button id="zo" title="Alejar" aria-label="Alejar">−</button>
+    <button id="bMed" title="Medir distancia o área" aria-label="Medir distancia o área">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 13.5 13.5 2.5l4 4-11 11z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 10l2 2M9 7l2 2M12 4l1.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+    <button id="bLoc" title="Mi ubicación" aria-label="Mi ubicación">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="10" r="1.8" fill="currentColor"/><path d="M10 1v3M10 16v3M1 10h3M16 10h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="capas.js"></script>
-  <script src="app.js"></script>
+  <div id="med" hidden>
+    <b>Medir</b>
+    <div class="fila"><button id="mD" class="on">Distancia</button><button id="mA">Área</button></div>
+    <div id="mr" aria-live="polite"></div>
+    <div class="fila"><button id="mU">Deshacer</button><button id="mB">Borrar</button><button id="mX">Cerrar</button></div>
+  </div>
+
+  <div id="cargando" hidden role="status"><i class="spin"></i><span id="ct"></span><div class="bar"><b id="cb"></b></div></div>
+
+  <div id="leg">
+    <div id="legh"><span>☰</span><b>Leyenda</b><span id="legc">⌃</span></div>
+    <div id="legb"></div>
+  </div>
+</main>
+<footer><span id="co">Lat — · Lon —</span><span id="zm">Zoom —</span><span id="ac">0 capas activas</span><span id="msg" role="status"></span></footer>
+<div id="modal"><div class="box"><h3 id="mt" style="margin:0"></h3><table id="mb"></table><button id="mc">Cerrar</button></div></div>
+
+<noscript>Este geovisor necesita JavaScript activado.</noscript>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="capas.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
