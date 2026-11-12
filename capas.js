@@ -161,7 +161,7 @@ const CATEGORIAS = [
 
     // CAPA REAL: usa una receta de estilo y otra de popup, con su ficha «i» y búsqueda por columnas
     { n:'COFOPRI', f:'data/COFOPRI-PY.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
-      buscar:['AMBITO'], estilo:ESTILOS.COFOPRI, popup:POPUPS.distrito },
+      buscar:['AMBITO'], estilo:ESTILOS.COFOPRI, popup:POPUPS.COFOPRI },
     { n:'Habilitación', f:'data/COFOPRI-GJ.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
       buscar:['AMBITO'], estilo:ESTILOS.HAB_URBANA, popup:POPUPS.distrito },
     { n:'Ordenanza N°038', f:'data/COFOPRI-GJ.geojson', fuente:'Municipalidad', escala:'1:25 000', fecha:'2026-11-01',
