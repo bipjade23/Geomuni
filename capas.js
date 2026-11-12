@@ -119,11 +119,19 @@ const ESTILOS = {
    --------------------------------------------------------------------- */
 const POPUPS = {
   // Funciona con el archivo de ejemplo limite_distrital.geojson (columnas NOMBRE, CODIGO, AREA_KM2)
-  distrito:{
+  COFOPRI:{
+    titulo:'COFOPRI',
+    campos:[ { campo:'AMBITO', etiqueta:'Nombre' },
+             { campo:'SECTOR', etiqueta:'Sector'},
+             { campo:'PARTIDA_R', etiqueta:'Partida Registral'},
+             { campo:'PLANO', etiqueta:'Plano'}],
+    pie:'Subgerencia de Saneamiento y Catastro'
+  },
+   distrito:{
     titulo:'COFOPRI',
     campos:[ { campo:'AMBITO', etiqueta:'Nombre' },
              { campo:'AREA_KM2', etiqueta:'Superficie', decimales:1, sufijo:' km²' } ],
-    pie:'Fuente: Municipalidad (ejemplo)'
+    pie:'Subgerencia de Saneamiento y Catastro'
   },
 
   // Para lotes: ficha con códigos traducidos y área con formato
