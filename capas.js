@@ -124,7 +124,7 @@ const POPUPS = {
     campos:[ { campo:'AMBITO', etiqueta:'Nombre' },
              { campo:'SECTOR', etiqueta:'Sector'},
              { campo:'PARTIDA_R', etiqueta:'Partida Registral'},
-             { campo:'PLANO', etiqueta:'Plano'}],
+             { campo:'PLANO', etiqueta:'Plano', enlace:true, texto:'Ver Plano'}],
     pie:'Subgerencia de Saneamiento y Catastro'
   },
    distrito:{
