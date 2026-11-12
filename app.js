@@ -167,7 +167,7 @@ function progreso(l, texto, pct){
 function finProgreso(l){ cargasEnCurso.delete(l); if(!cargasEnCurso.size) cargando.hidden = true; }
 const pausa = () => new Promise(r => setTimeout(r));   // cede un instante al navegador para que pinte
 
-function aviso(t){ msg.textContent = t; setTimeout(() => { if(msg.textContent === t) msg.textContent = ''; }, 5000); }
+function aviso(t){ msg.textContent = t; setTimeout(() => { if(msg.textContent === t) msg.textContent = ''; }, Math.max(5000, t.length * 70)); }
 
 // ---------- 6. Carga de capas ----------
 // Capa de ejemplo (cuadritos). Se usa cuando la capa no tiene archivo 'f'.
@@ -189,7 +189,13 @@ const UMBRAL_VISTA = 3000;    // desde cuántos elementos se activa el modo «vi
 const MAX_VISTA    = 15000;   // máximo de elementos dibujados a la vez en ese modo
 
 // ---- Ventana emergente (popup) de cada capa; se configura con «popup» en capas.js ----
-const urlSegura = u => { const t = String(u).trim(); return /^(javascript|data|vbscript):/i.test(t) ? '' : t; };
+// Solo se aceptan textos que parezcan enlace o ruta (https://…, mailto:, data/foto.jpg); así un valor como
+// «SIN PLANO» se muestra como texto normal en vez de un enlace roto. Los esquemas peligrosos se bloquean.
+const urlSegura = u => {
+  const t = String(u).trim();
+  if(/^(javascript|data|vbscript):/i.test(t)) return '';
+  return /^(https?:\/\/|mailto:|tel:|\.{0,2}\/)\S+$/i.test(t) || /^[^\s\/]+(\/[^\s\/]+)*\.[a-z0-9]{2,5}([?#]\S*)?$/i.test(t) ? t : '';
+};
 // Reemplaza {COLUMNA} por el valor de esa columna (todo se escapa, así que es seguro).
 const rellenar = (txt, p) => esc(String(txt).replace(/\{([^{}]+)\}/g, (m, k) => { const v = p[k.trim()]; return v == null ? '' : v; }));
 
@@ -203,10 +209,13 @@ function formatoValor(v, c){
 function filaPopup(c, p){
   const v = p[c.campo];
   if(v == null || String(v).trim() === '') return '';                           // las filas vacías no se muestran
-  const etiqueta = c.etiqueta || c.campo, u = (c.imagen || c.enlace) ? urlSegura(v) : '';
+  const etiqueta = c.etiqueta || c.campo;
+  // Es enlace si lo pides con enlace:true, o si el valor empieza con http:// o https:// (enlace:false lo evita).
+  const esEnlace = !c.imagen && c.enlace !== false && (c.enlace || /^https?:\/\/\S+$/i.test(String(v).trim()));
+  const u = (c.imagen || esEnlace) ? urlSegura(v) : '';
   let celda;
-  if(c.imagen)      celda = u ? '<img src="' + esc(u) + '" alt="' + esc(etiqueta) + '">' : '';
-  else if(c.enlace) celda = u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(c.texto || 'Abrir') + '</a>' : '';
+  if(c.imagen)       celda = u ? '<img src="' + esc(u) + '" alt="' + esc(etiqueta) + '">' : '';
+  else if(esEnlace)  celda = u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(c.texto || 'Abrir enlace') + '</a>' : esc(v);   // si no es enlace válido, se muestra el texto tal cual
   else              celda = esc(formatoValor(v, c));
   return celda ? '<tr><td>' + esc(etiqueta) + '</td><td>' + celda + '</td></tr>' : '';
 }
@@ -227,6 +236,25 @@ function popupHtml(l, f){
 function abrirPopup(l, f, latlng){
   const ancho = (l.popup && l.popup.ancho) || 300;
   L.popup({ maxWidth:ancho, minWidth:Math.min(180, ancho) }).setLatLng(latlng).setContent(popupHtml(l, f)).openOn(map);
+}
+
+// Error con un mensaje pensado para el usuario (se muestra tal cual en el pie de página).
+class ErrorCapa extends Error {}
+
+// El visor trabaja con grados (WGS84, EPSG:4326). Si el archivo trae metros (Web Mercator, UTM…), la capa
+// «se enciende» pero queda a miles de kilómetros y no se ve: mejor detectarlo y explicarlo.
+function verificarCoordenadas(l, feats){
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  feats.slice(0, 50).forEach(f => {
+    const [a, b, c, d] = bboxDe(f.geometry);
+    if(a < x0) x0 = a; if(b < y0) y0 = b; if(c > x1) x1 = c; if(d > y1) y1 = d;
+  });
+  if(Math.abs(x0) > 180 || Math.abs(x1) > 180 || Math.abs(y0) > 90 || Math.abs(y1) > 90){
+    const m = '«' + l.name + '»: las coordenadas no están en grados (X de ' + Math.round(x0) + ' a ' + Math.round(x1) +
+      '; Y de ' + Math.round(y0) + ' a ' + Math.round(y1) + '). Reproyecta el archivo a WGS84 (EPSG:4326).';
+    console.error(m + ' En QGIS: clic derecho en la capa → Exportar → Guardar entidades como… → GeoJSON, con CRS EPSG:4326.');
+    throw new ErrorCapa(m);
+  }
 }
 
 // Avisa si capas.js pide una columna que no existe en el GeoJSON (error muy común al escribir el nombre).
@@ -324,6 +352,7 @@ async function cargar(l){
               : datos.type === 'Feature' && datos.geometry ? [datos] : null;
   l.feats = feats || [];                 // los elementos quedan disponibles para el buscador
   l.n = feats ? feats.length : 1;
+  if(feats) verificarCoordenadas(l, feats);
   verificarCampos(l, feats);
   const opts = {
     style: f => estilo(l, f),
@@ -359,7 +388,7 @@ async function toggle(l, on){
       if(l.on) mostrar(l);
     }catch(e){
       console.error(e);
-      l.on = false; aviso('No se pudo cargar ' + l.file + ' (¿estás usando un servidor local?)');
+      l.on = false; aviso(e instanceof ErrorCapa ? e.message : 'No se pudo cargar ' + l.file + ' (¿estás usando un servidor local?)');
     }
   } else {
     l.oculta = false;
@@ -693,3 +722,4 @@ refresh();
   await Promise.all(CAPAS.filter(l => pedidas.includes(l.slug)).map(l => toggle(l, true)));
   listo = true; guardarHash();
 })();
+
